@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -268,6 +269,24 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Return a throwable exception explaining that the document end was reached unexpectedly.
+     *
+     * @return the exception
+     */
+    default ConfigXMLParseException unexpectedDocumentEnd() {
+        return msg.unexpectedDocumentEnd(getLocation());
+    }
+
+    /**
+     * Return a throwable exception explaining that some unexpected content was encountered.
+     *
+     * @return the exception
+     */
+    default ConfigXMLParseException unexpectedContent() {
+        return msg.unexpectedContent(eventToString(getEventType()), getLocation());
+    }
+
+    /**
      * Return a throwable exception explaining that a required element with the given namespace and local name was missing.
      *
      * @param namespaceUri the namespace URI
@@ -403,5 +422,20 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
      */
     default boolean getBooleanAttributeValue(int index) {
         return Boolean.parseBoolean(getAttributeValue(index));
+    }
+
+    /**
+     * Get an attribute value as a {@link URI}.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid URI
+     */
+    default URI getURIAttributeValue(int index) throws ConfigXMLParseException {
+        try {
+            return new URI(getAttributeValue(index));
+        } catch (URISyntaxException e) {
+            throw msg.uriParseException(e, getAttributeName(index), getLocation());
+        }
     }
 }

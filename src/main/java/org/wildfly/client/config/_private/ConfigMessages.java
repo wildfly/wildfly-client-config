@@ -20,6 +20,7 @@ package org.wildfly.client.config._private;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -93,4 +94,7 @@ public interface ConfigMessages {
 
     @Message(id = 18, value = "Failed to parse integer value of attribute \"%s\"")
     ConfigXMLParseException intParseException(@Cause NumberFormatException e, QName attributeName, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 19, value = "Failed to parse URI value of attribute \"%s\"")
+    ConfigXMLParseException uriParseException(@Cause URISyntaxException e, QName attributeName, @Param(Location.class) XMLLocation location);
 }

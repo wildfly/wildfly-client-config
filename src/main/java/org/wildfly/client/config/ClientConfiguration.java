@@ -23,8 +23,11 @@ import static javax.xml.stream.XMLStreamConstants.*;
 import static org.wildfly.client.config.ConfigurationXMLStreamReader.eventToString;
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Set;
 
 import javax.xml.stream.XMLInputFactory;
@@ -48,10 +51,23 @@ public class ClientConfiguration {
         return xmlInputFactory;
     }
 
+    /**
+     * Get the URI from which the configuration is being read.
+     *
+     * @return the URI from which the configuration is being read
+     */
     public URI getConfigurationUri() {
         return configurationUri;
     }
 
+    /**
+     * Get a stream reader over a configuration.  The configuration returned will be the first element within the root
+     * {@code configuration} element which has a namespace corresponding to one of the given namespaces.
+     *
+     * @param recognizedNamespaces the recognized namespaces
+     * @return a reader which returns the first matching element
+     * @throws ConfigXMLParseException if a read error occurs
+     */
     public ConfigurationXMLStreamReader readConfiguration(Set<String> recognizedNamespaces) throws ConfigXMLParseException {
         final ConfigurationXMLStreamReader reader = new XIncludeXMLStreamReader(ConfigurationXMLStreamReader.openUri(configurationUri, xmlInputFactory));
         try {
@@ -81,12 +97,74 @@ public class ClientConfiguration {
         }
     }
 
-    public static ClientConfiguration getInstance(URI configurationUri) throws MalformedURLException {
+    /**
+     * Get a client configuration instance for a certain URI.
+     *
+     * @param configurationUri the configuration URI
+     * @return the client configuration instance
+     */
+    public static ClientConfiguration getInstance(URI configurationUri) {
         final XMLInputFactory xmlInputFactory = XMLInputFactory.newFactory();
         xmlInputFactory.setProperty(XMLInputFactory.IS_VALIDATING, FALSE);
         xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, FALSE);
         xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, FALSE);
-        configurationUri.toURL();
         return new ClientConfiguration(xmlInputFactory, configurationUri);
+    }
+
+    /**
+     * Get a client configuration instance from the current environment.  First, the system property
+     * {@code wildfly.config.url} is checked.  If present, the configuration file is taken from that URL (which is resolved
+     * against the current working directory if it is a relative URL or a bare path).  If the property is not given,
+     * the current thread's context class loader is consulted for a file called {@code wildfly-config.xml}, either in the
+     * root of the class loader or within the {@code META-INF} folder.  If no such resource is found, the same search
+     * is done against the class loader of this library.  Finally, if no configurations are found or are loadable, {@code null}
+     * is returned.
+     *
+     * @return the client configuration instance, or {@code null} if no configuration is found
+     */
+    public static ClientConfiguration getInstance() {
+        // specified URL overrides all
+        final String wildFlyConfig = System.getProperty("wildfly.config.url");
+        if (wildFlyConfig != null) {
+            URI uri;
+            try {
+                uri = new URI(wildFlyConfig);
+                if (! uri.isAbsolute()) {
+                    uri = new URI("file", "", System.getProperty("user.dir"), null).resolve(uri);
+                }
+            } catch (URISyntaxException e) {
+                // no config file there
+                return null;
+            }
+            return getInstance(uri);
+        }
+
+        ClassLoader classLoader;
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            classLoader = AccessController.doPrivileged((PrivilegedAction<ClassLoader>) ClientConfiguration::getContextClassLoader);
+        } else {
+            classLoader = getContextClassLoader();
+        }
+        if (classLoader == null) {
+            // no priv block needed since it's our class loader
+            classLoader = ClientConfiguration.class.getClassLoader();
+        }
+        URL resource = classLoader.getResource("/wildfly-config.xml");
+        if (resource == null) {
+            resource = classLoader.getResource("/META-INF/wildfly-config.xml");
+            if (resource == null) {
+                return null;
+            }
+        } try {
+            return new ClientConfiguration(XMLInputFactory.newFactory(), resource.toURI());
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+
+    private static ClassLoader getContextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 }
