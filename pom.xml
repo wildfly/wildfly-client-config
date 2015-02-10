@@ -63,6 +63,12 @@
                     <forkMode>always</forkMode>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>org.wildfly.client.config._private</excludePackageNames>
+                </configuration>
+            </plugin>
 
             <!-- Checkstyle -->
 
