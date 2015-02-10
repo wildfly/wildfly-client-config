@@ -286,17 +286,16 @@ public final class XMLLocation implements Location, Comparable<XMLLocation> {
     }
 
     private void toString(final StringBuilder b) {
-        if (includedFrom != null) {
-            includedFrom.toString(b);
-        }
-        b.append(uri == null ? "<input>" : uri).append(':');
+        b.append("\n\tat ").append(uri == null ? "<input>" : uri).append(':');
         if (lineNumber > 0) {
             b.append(lineNumber).append(':');
             if (columnNumber > 0) {
                 b.append(columnNumber).append(':');
             }
         }
-        b.append(' ');
+        if (includedFrom != null) {
+            includedFrom.toString(b);
+        }
     }
 
     private int compareUri(URI a, URI b) {

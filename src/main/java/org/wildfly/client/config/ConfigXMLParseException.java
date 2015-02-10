@@ -273,12 +273,12 @@ public class ConfigXMLParseException extends XMLStreamException {
     }
 
     private ConfigXMLParseException(final String msg, final XMLLocation location, @SuppressWarnings("unused") int ignored) {
-        super(location + msg);
+        super(msg + location);
         this.location = location;
     }
 
     private ConfigXMLParseException(final String msg, final XMLLocation location, final Throwable cause, @SuppressWarnings("unused") int ignored) {
-        super(location + msg, cause);
+        super(msg + location, cause);
         this.location = location;
     }
 }
