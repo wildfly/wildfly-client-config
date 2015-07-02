@@ -254,7 +254,13 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
      * @return the exception
      */
     default ConfigXMLParseException unexpectedElement() {
-        return msg.unexpectedElement(getName(), getLocation());
+        final String namespaceURI = getNamespaceURI();
+        final String localName = getLocalName();
+        if (namespaceURI == null) {
+            return msg.unexpectedElement(localName, getLocation());
+        } else {
+            return msg.unexpectedElement(localName, namespaceURI, getLocation());
+        }
     }
 
     /**

@@ -74,8 +74,14 @@ public class ClientConfiguration {
             if (reader.hasNext()) {
                 switch (reader.nextTag()) {
                     case START_ELEMENT: {
-                        if (reader.getNamespaceURI() != null || ! "configuration".equals(reader.getLocalName())) {
-                            throw msg.unexpectedElement(reader.getName(), reader.getLocation());
+                        final String namespaceURI = reader.getNamespaceURI();
+                        final String localName = reader.getLocalName();
+                        if (namespaceURI != null || ! "configuration".equals(localName)) {
+                            if (namespaceURI == null) {
+                                throw msg.unexpectedElement(localName, reader.getLocation());
+                            } else {
+                                throw msg.unexpectedElement(localName, namespaceURI, reader.getLocation());
+                            }
                         }
                         return new SelectingXMLStreamReader(true, reader, recognizedNamespaces);
                     }
@@ -150,9 +156,9 @@ public class ClientConfiguration {
             // no priv block needed since it's our class loader
             classLoader = ClientConfiguration.class.getClassLoader();
         }
-        URL resource = classLoader.getResource("/wildfly-config.xml");
+        URL resource = classLoader.getResource("wildfly-config.xml");
         if (resource == null) {
-            resource = classLoader.getResource("/META-INF/wildfly-config.xml");
+            resource = classLoader.getResource("META-INF/wildfly-config.xml");
             if (resource == null) {
                 return null;
             }

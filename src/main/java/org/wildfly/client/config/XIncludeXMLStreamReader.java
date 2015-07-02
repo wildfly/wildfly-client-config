@@ -122,7 +122,7 @@ final class XIncludeXMLStreamReader extends AbstractDelegatingXMLStreamReader {
                             }
                         }
                         default: {
-                            throw msg.unexpectedElement(delegate.getName(), getLocation());
+                            throw msg.unexpectedElement(delegate.getLocalName(), namespaceURI, getLocation());
                         }
                     }
                 } else {

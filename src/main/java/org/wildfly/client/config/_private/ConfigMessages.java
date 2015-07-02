@@ -36,7 +36,7 @@ import org.wildfly.client.config.XMLLocation;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "CONF")
+@MessageBundle(projectCode = "CONF", length = 4)
 public interface ConfigMessages {
 
     ConfigMessages msg = Messages.getBundle(ConfigMessages.class);
@@ -53,8 +53,11 @@ public interface ConfigMessages {
     @Message(id = 4, value = "Unexpected content of type \"%s\"")
     ConfigXMLParseException unexpectedContent(String eventType, @Param(Location.class) XMLLocation location);
 
-    @Message(id = 5, value = "Unexpected element \"%s\" encountered")
-    ConfigXMLParseException unexpectedElement(QName name, @Param(Location.class) XMLLocation location);
+    @Message(id = 5, value = "Unexpected element \"%s\" in namespace \"%s\" encountered")
+    ConfigXMLParseException unexpectedElement(String localName, String namespaceUri, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 5, value = "Unexpected element \"%s\" (no namespace) encountered")
+    ConfigXMLParseException unexpectedElement(String localName, @Param(Location.class) XMLLocation location);
 
     @Message(id = 6, value = "Expected start or end element, found \"%s\"")
     ConfigXMLParseException expectedStartOrEndElement(String eventTypeName, @Param(Location.class) XMLLocation location);
