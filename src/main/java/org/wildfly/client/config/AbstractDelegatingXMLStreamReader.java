@@ -23,6 +23,7 @@ import java.net.URI;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -61,7 +62,18 @@ abstract class AbstractDelegatingXMLStreamReader implements ConfigurationXMLStre
     }
 
     public int nextTag() throws ConfigXMLParseException {
-        return getDelegate().nextTag();
+        int eventType = next();
+        while (eventType == XMLStreamConstants.CHARACTERS && isWhiteSpace()
+            || eventType == XMLStreamConstants.CDATA && isWhiteSpace()
+            || eventType == XMLStreamConstants.SPACE
+            || eventType == XMLStreamConstants.PROCESSING_INSTRUCTION
+            || eventType == XMLStreamConstants.COMMENT) {
+            eventType = next();
+        }
+        if (eventType != XMLStreamConstants.START_ELEMENT && eventType != XMLStreamConstants.END_ELEMENT) {
+            throw unexpectedContent();
+        }
+        return eventType;
     }
 
     public String getElementText() throws ConfigXMLParseException {
