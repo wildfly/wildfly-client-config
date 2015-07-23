@@ -29,7 +29,7 @@
 
     <groupId>org.wildfly.client</groupId>
     <artifactId>wildfly-client-config</artifactId>
-    <version>1.0.0.Alpha3</version>
+    <version>1.0.0.Alpha4-SNAPSHOT</version>
 
     <name>WildFly Client Configuration</name>
     <description>Library for supporting WildFly common client configuration</description>
