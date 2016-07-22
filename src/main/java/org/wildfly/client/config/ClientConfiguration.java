@@ -76,7 +76,7 @@ public class ClientConfiguration {
                     case START_ELEMENT: {
                         final String namespaceURI = reader.getNamespaceURI();
                         final String localName = reader.getLocalName();
-                        if (namespaceURI != null || ! "configuration".equals(localName)) {
+                        if ((namespaceURI != null && namespaceURI.length() > 0) || ! "configuration".equals(localName)) {
                             if (namespaceURI == null) {
                                 throw msg.unexpectedElement(localName, reader.getLocation());
                             } else {
