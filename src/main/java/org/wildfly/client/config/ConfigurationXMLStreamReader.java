@@ -20,19 +20,13 @@ package org.wildfly.client.config;
 
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 /**
@@ -41,37 +35,6 @@ import javax.xml.stream.XMLStreamReader;
 public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoCloseable {
 
     char[] EMPTY_CHARS = new char[0];
-
-    static ConfigurationXMLStreamReader openUri(final URI uri, final XMLInputFactory xmlInputFactory) throws ConfigXMLParseException {
-        try {
-            final URL url = uri.toURL();
-            final URLConnection connection = url.openConnection();
-            connection.setRequestProperty("Accept", "application/xml,text/xml,application/xhtml+xml");
-            final InputStream inputStream = connection.getInputStream();
-            try {
-                return openUri(uri, xmlInputFactory, inputStream);
-            } catch (final Throwable t) {
-                try {
-                    inputStream.close();
-                } catch (Throwable t2) {
-                    t.addSuppressed(t2);
-                }
-                throw t;
-            }
-        } catch (MalformedURLException e) {
-            throw msg.invalidUrl(new XMLLocation(uri), e);
-        } catch (IOException e) {
-            throw msg.failedToReadInput(new XMLLocation(uri), e);
-        }
-    }
-
-    static ConfigurationXMLStreamReader openUri(final URI uri, final XMLInputFactory xmlInputFactory, final InputStream inputStream) throws ConfigXMLParseException {
-        try {
-            return new BasicXMLStreamReader(null, xmlInputFactory.createXMLStreamReader(inputStream), uri, xmlInputFactory);
-        } catch (XMLStreamException e) {
-            throw ConfigXMLParseException.from(e, uri, null);
-        }
-    }
 
     URI getUri();
 

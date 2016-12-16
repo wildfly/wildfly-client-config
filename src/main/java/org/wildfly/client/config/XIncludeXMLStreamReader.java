@@ -196,6 +196,9 @@ final class XIncludeXMLStreamReader extends AbstractDelegatingXMLStreamReader {
             }
         }
         if (! fallback) {
+            if (href == null) {
+                throw delegate.missingRequiredAttribute(null, "href");
+            }
             final URL url;
             final InputStream inputStream;
             ConfigurationXMLStreamReader child;
@@ -212,7 +215,7 @@ final class XIncludeXMLStreamReader extends AbstractDelegatingXMLStreamReader {
                     if (parseAsText) {
                         child = new TextXMLStreamReader(textCharset, inputStream, this, href);
                     } else {
-                        child = new XIncludeXMLStreamReader(new BasicXMLStreamReader(getLocation(), getXmlInputFactory().createXMLStreamReader(inputStream), href, getXmlInputFactory()));
+                        child = new XIncludeXMLStreamReader(new BasicXMLStreamReader(getLocation(), getXmlInputFactory().createXMLStreamReader(inputStream), href, getXmlInputFactory(), inputStream));
                     }
                 } catch (XMLStreamException e) {
                     try {

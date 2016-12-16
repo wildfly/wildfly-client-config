@@ -23,14 +23,21 @@ import static javax.xml.stream.XMLStreamConstants.*;
 import static org.wildfly.client.config.ConfigurationXMLStreamReader.eventToString;
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Set;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+
+import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * The entry point for generic client configuration.
@@ -41,10 +48,25 @@ public class ClientConfiguration {
 
     private final XMLInputFactory xmlInputFactory;
     private final URI configurationUri;
+    private final ExceptionSupplier<InputStream, IOException> streamSupplier;
+
+    ClientConfiguration(final XMLInputFactory xmlInputFactory, final URI configurationUri, final ExceptionSupplier<InputStream, IOException> streamSupplier) {
+        this.xmlInputFactory = xmlInputFactory;
+        this.configurationUri = configurationUri;
+        this.streamSupplier = streamSupplier;
+    }
 
     ClientConfiguration(final XMLInputFactory xmlInputFactory, final URI configurationUri) {
         this.xmlInputFactory = xmlInputFactory;
         this.configurationUri = configurationUri;
+        this.streamSupplier = this::streamOpener;
+    }
+
+    private InputStream streamOpener() throws IOException {
+        final URL url = configurationUri.toURL();
+        final URLConnection connection = url.openConnection();
+        connection.setRequestProperty("Accept", "application/xml,text/xml,application/xhtml+xml");
+        return connection.getInputStream();
     }
 
     XMLInputFactory getXmlInputFactory() {
@@ -60,6 +82,38 @@ public class ClientConfiguration {
         return configurationUri;
     }
 
+    static ConfigurationXMLStreamReader openUri(final URI uri, final XMLInputFactory xmlInputFactory) throws ConfigXMLParseException {
+        try {
+            final URL url = uri.toURL();
+            final URLConnection connection = url.openConnection();
+            connection.setRequestProperty("Accept", "application/xml,text/xml,application/xhtml+xml");
+            final InputStream inputStream = connection.getInputStream();
+            try {
+                return openUri(uri, xmlInputFactory, inputStream);
+            } catch (final Throwable t) {
+                try {
+                    inputStream.close();
+                } catch (Throwable t2) {
+                    t.addSuppressed(t2);
+                }
+                throw t;
+            }
+        } catch (MalformedURLException e) {
+            throw msg.invalidUrl(new XMLLocation(uri), e);
+        } catch (IOException e) {
+            throw msg.failedToReadInput(new XMLLocation(uri), e);
+        }
+    }
+
+    static ConfigurationXMLStreamReader openUri(final URI uri, final XMLInputFactory xmlInputFactory, final InputStream inputStream) throws ConfigXMLParseException {
+        try {
+            return new BasicXMLStreamReader(null, xmlInputFactory.createXMLStreamReader(inputStream), uri, xmlInputFactory, inputStream);
+        } catch (XMLStreamException e) {
+            throw ConfigXMLParseException.from(e, uri, null);
+        }
+    }
+
+
     /**
      * Get a stream reader over a configuration.  The configuration returned will be the first element within the root
      * {@code configuration} element which has a namespace corresponding to one of the given namespaces.
@@ -69,14 +123,23 @@ public class ClientConfiguration {
      * @throws ConfigXMLParseException if a read error occurs
      */
     public ConfigurationXMLStreamReader readConfiguration(Set<String> recognizedNamespaces) throws ConfigXMLParseException {
-        final ConfigurationXMLStreamReader reader = new XIncludeXMLStreamReader(ConfigurationXMLStreamReader.openUri(configurationUri, xmlInputFactory));
+        final URI uri = this.configurationUri;
+        final InputStream inputStream;
+        try {
+            inputStream = streamSupplier.get();
+        } catch (MalformedURLException e) {
+            throw msg.invalidUrl(new XMLLocation(uri), e);
+        } catch (IOException e) {
+            throw msg.failedToReadInput(new XMLLocation(uri), e);
+        }
+        final ConfigurationXMLStreamReader reader = new XIncludeXMLStreamReader(openUri(uri, xmlInputFactory, inputStream));
         try {
             if (reader.hasNext()) {
                 switch (reader.nextTag()) {
                     case START_ELEMENT: {
                         final String namespaceURI = reader.getNamespaceURI();
                         final String localName = reader.getLocalName();
-                        if ((namespaceURI != null && namespaceURI.length() > 0) || ! "configuration".equals(localName)) {
+                        if (namespaceURI != null && namespaceURI.length() > 0 || ! "configuration".equals(localName)) {
                             if (namespaceURI == null) {
                                 throw msg.unexpectedElement(localName, reader.getLocation());
                             } else {
@@ -110,11 +173,25 @@ public class ClientConfiguration {
      * @return the client configuration instance
      */
     public static ClientConfiguration getInstance(URI configurationUri) {
+        return new ClientConfiguration(createXmlInputFactory(), configurationUri);
+    }
+
+    /**
+     * Get a client configuration instance for a certain URI, with streams provided by the given supplier.
+     *
+     * @param configurationUri the configuration URI
+     * @return the client configuration instance
+     */
+    public static ClientConfiguration getInstance(URI configurationUri, ExceptionSupplier<InputStream, IOException> streamSupplier) {
+        return new ClientConfiguration(createXmlInputFactory(), configurationUri, streamSupplier);
+    }
+
+    private static XMLInputFactory createXmlInputFactory() {
         final XMLInputFactory xmlInputFactory = XMLInputFactory.newFactory();
         xmlInputFactory.setProperty(XMLInputFactory.IS_VALIDATING, FALSE);
         xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, FALSE);
         xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, FALSE);
-        return new ClientConfiguration(xmlInputFactory, configurationUri);
+        return xmlInputFactory;
     }
 
     /**
@@ -163,7 +240,7 @@ public class ClientConfiguration {
                 return null;
             }
         } try {
-            return new ClientConfiguration(XMLInputFactory.newFactory(), resource.toURI());
+            return new ClientConfiguration(XMLInputFactory.newFactory(), resource.toURI(), resource::openStream);
         } catch (URISyntaxException e) {
             return null;
         }

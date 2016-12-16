@@ -18,6 +18,8 @@
 
 package org.wildfly.client.config;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.net.URI;
 
 import javax.xml.namespace.NamespaceContext;
@@ -34,12 +36,14 @@ final class BasicXMLStreamReader implements ConfigurationXMLStreamReader {
     private final XMLStreamReader xmlStreamReader;
     private final URI uri;
     private final XMLInputFactory inputFactory;
+    private final Closeable underlying;
 
-    BasicXMLStreamReader(final XMLLocation includedFrom, final XMLStreamReader xmlStreamReader, final URI uri, final XMLInputFactory inputFactory) {
+    BasicXMLStreamReader(final XMLLocation includedFrom, final XMLStreamReader xmlStreamReader, final URI uri, final XMLInputFactory inputFactory, final Closeable underlying) {
         this.includedFrom = includedFrom;
         this.xmlStreamReader = xmlStreamReader;
         this.uri = uri;
         this.inputFactory = inputFactory;
+        this.underlying = underlying;
     }
 
     public URI getUri() {
@@ -167,9 +171,14 @@ final class BasicXMLStreamReader implements ConfigurationXMLStreamReader {
     }
 
     public void close() throws ConfigXMLParseException {
-        try {
-            xmlStreamReader.close();
-        } catch (XMLStreamException e) {
+        // use try-with-resources because it has nice suppressed exception behavior in this case
+        try (Closeable underlying = this.underlying) {
+            try {
+                xmlStreamReader.close();
+            } catch (XMLStreamException e) {
+                throw ConfigXMLParseException.from(e, uri, includedFrom);
+            }
+        } catch (IOException e) {
             throw ConfigXMLParseException.from(e, uri, includedFrom);
         }
     }
