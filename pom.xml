@@ -40,7 +40,7 @@
         <version.org.jboss.logging.jboss-logging-processor>1.2.0.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager>1.5.2.Final</version.org.jboss.logmanager>
         <version.org.wildfly.checkstyle-config>1.0.2.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.common>1.2.0.Beta2</version.org.wildfly.common>
+        <version.org.wildfly.common>1.2.0.Beta6-SNAPSHOT</version.org.wildfly.common>
         <version.com.puppycrawl.tools.checkstyle>6.1</version.com.puppycrawl.tools.checkstyle>
 
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -109,6 +109,41 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            org.wildfly.client.config;version=${project.version}
+                        </Export-Package>
+                        <Import-Package>
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>manifest</id>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>java/**</exclude>
+                    </excludes>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
