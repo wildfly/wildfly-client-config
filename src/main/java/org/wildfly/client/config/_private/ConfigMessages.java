@@ -100,4 +100,10 @@ public interface ConfigMessages {
 
     @Message(id = 19, value = "Failed to parse URI value of attribute \"%s\"")
     ConfigXMLParseException uriParseException(@Cause URISyntaxException e, QName attributeName, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 20, value = "Failed to parse expression value of attribute \"%s\"")
+    ConfigXMLParseException expressionParseException(@Cause IllegalArgumentException ex, QName attributeName, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 21, value = "Failed to parse expression text")
+    ConfigXMLParseException expressionTextParseException(@Cause IllegalArgumentException ex, @Param(Location.class) XMLLocation location);
 }

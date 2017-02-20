@@ -29,6 +29,8 @@ import java.util.List;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.wildfly.common.expression.Expression;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -108,6 +110,21 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
                     throw msg.unexpectedContent(eventToString(eventType), getLocation());
                 }
             }
+        }
+    }
+
+    /**
+     * Get the element text content as an expression.
+     *
+     * @param flags the expression compilation flags
+     * @return the expression (not {@code null})
+     * @throws ConfigXMLParseException if the value is not a valid expression by the given flags
+     */
+    default Expression getElementExpression(Expression.Flag... flags) throws ConfigXMLParseException {
+        try {
+            return Expression.compile(getElementText(), flags);
+        } catch (IllegalArgumentException ex) {
+            throw msg.expressionTextParseException(ex, getLocation());
         }
     }
 
@@ -405,6 +422,25 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
             return new URI(getAttributeValue(index));
         } catch (URISyntaxException e) {
             throw msg.uriParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
+     * Get an attribute value as a compiled {@link Expression}.
+     *
+     * @param index the attribute index
+     * @param flags the expression compilation flags
+     * @return the expression, or {@code null} if the attribute is not present
+     * @throws ConfigXMLParseException if the value is not a valid expression by the given flags
+     */
+    default Expression getExpressionAttributeValue(int index, Expression.Flag... flags) throws ConfigXMLParseException {
+        final String attributeValue = getAttributeValue(index);
+        if (attributeValue == null) {
+            return null;
+        } else try {
+            return Expression.compile(attributeValue, flags);
+        } catch (IllegalArgumentException ex) {
+            throw msg.expressionParseException(ex, getAttributeName(index), getLocation());
         }
     }
 }
