@@ -23,6 +23,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 import static org.wildfly.client.config.ConfigurationXMLStreamReader.eventToString;
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -213,7 +214,7 @@ public class ClientConfiguration {
             try {
                 uri = new URI(wildFlyConfig);
                 if (! uri.isAbsolute()) {
-                    String userDir = System.getProperty("user.dir");
+                    String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
                     uri = new URI("file", "", userDir.endsWith("/") ? userDir : userDir + "/", null).resolve(uri);
                 }
             } catch (URISyntaxException e) {
