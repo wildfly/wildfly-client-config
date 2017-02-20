@@ -213,7 +213,8 @@ public class ClientConfiguration {
             try {
                 uri = new URI(wildFlyConfig);
                 if (! uri.isAbsolute()) {
-                    uri = new URI("file", "", System.getProperty("user.dir"), null).resolve(uri);
+                    String userDir = System.getProperty("user.dir");
+                    uri = new URI("file", "", userDir.endsWith("/") ? userDir : userDir + "/", null).resolve(uri);
                 }
             } catch (URISyntaxException e) {
                 // no config file there
