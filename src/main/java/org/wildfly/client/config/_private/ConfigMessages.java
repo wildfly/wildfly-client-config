@@ -106,4 +106,13 @@ public interface ConfigMessages {
 
     @Message(id = 21, value = "Failed to parse expression text")
     ConfigXMLParseException expressionTextParseException(@Cause IllegalArgumentException ex, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 22, value = "Numeric value of attribute \"%s\" is out of range; actual value is \"%s\" but the value must not be less than %d or more than %d")
+    ConfigXMLParseException numericAttributeValueOutOfRange(QName attributeName, String actualValue, long minValue, long maxValue, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 23, value = "Failed to parse IP address value of attribute \"%s\": \"%s\" is not a valid IP address")
+    ConfigXMLParseException inetAddressParseException(QName attributeName, String address, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 24, value = "Failed to parse CIDR address value of attribute \"%s\": \"%s\" is not a valid CIDR address")
+    ConfigXMLParseException cidrAddressParseException(QName attributeName, String address, @Param(Location.class) XMLLocation location);
 }

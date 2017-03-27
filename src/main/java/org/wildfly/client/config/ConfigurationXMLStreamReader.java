@@ -20,6 +20,7 @@ package org.wildfly.client.config;
 
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -30,6 +31,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
 import org.wildfly.common.expression.Expression;
+import org.wildfly.common.net.CidrAddress;
+import org.wildfly.common.net.Inet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -294,6 +297,18 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
         return msg.missingRequiredAttribute(namespaceUri, localName, getLocation());
     }
 
+    /**
+     * Return a throwable exception explaining that a numeric attribute at the given index was out of its required range.
+     *
+     * @param index the attribute index
+     * @param minValue the minimum attribute value
+     * @param maxValue the maximum attribute value
+     * @return the exception
+     */
+    default ConfigXMLParseException numericAttributeValueOutOfRange(int index, long minValue, long maxValue) {
+        return msg.numericAttributeValueOutOfRange(getAttributeName(index), getAttributeValue(index), minValue, maxValue, getLocation());
+    }
+
     // ===== attribute helpers =====
 
     /**
@@ -311,6 +326,25 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
         } catch (NumberFormatException e) {
             throw msg.intParseException(e, getAttributeName(index), getLocation());
         }
+    }
+
+    /**
+     * Get the value of an attribute as an integer.
+     *
+     * @param index the index of the attribute
+     * @param minValue the minimum allowed value
+     * @param maxValue the maximum allowed value
+     *
+     * @return the integer value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default int getIntAttributeValue(int index, int minValue, int maxValue) throws ConfigXMLParseException {
+        final int value = getIntAttributeValue(index);
+        if (value < minValue || value > maxValue) {
+            throw numericAttributeValueOutOfRange(index, minValue, maxValue);
+        }
+        return value;
     }
 
     /**
@@ -383,6 +417,25 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as a long.
+     *
+     * @param index the index of the attribute
+     * @param minValue the minimum allowed value
+     * @param maxValue the maximum allowed value
+     *
+     * @return the long value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default long getLongAttributeValue(int index, long minValue, long maxValue) throws ConfigXMLParseException {
+        final long value = getLongAttributeValue(index);
+        if (value < minValue || value > maxValue) {
+            throw numericAttributeValueOutOfRange(index, minValue, maxValue);
+        }
+        return value;
+    }
+
+    /**
      * Get the value of an attribute as a long integer list.
      *
      * @param index the index of the attribute
@@ -441,6 +494,46 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
             return Expression.compile(attributeValue, flags);
         } catch (IllegalArgumentException ex) {
             throw msg.expressionParseException(ex, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
+     * Get an attribute value as a {@link InetAddress}.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid IP address
+     */
+    default InetAddress getInetAddressAttributeValue(int index) throws ConfigXMLParseException {
+        final String attributeValue = getAttributeValue(index);
+        if (attributeValue == null) {
+            return null;
+        } else {
+            final InetAddress inetAddress = Inet.parseInetAddress(attributeValue);
+            if (inetAddress == null) {
+                throw msg.inetAddressParseException(getAttributeName(index), attributeValue, getLocation());
+            }
+            return inetAddress;
+        }
+    }
+
+    /**
+     * Get an attribute value as a {@link CidrAddress}.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid IP address
+     */
+    default CidrAddress getCidrAddressAttributeValue(int index) throws ConfigXMLParseException {
+        final String attributeValue = getAttributeValue(index);
+        if (attributeValue == null) {
+            return null;
+        } else {
+            final CidrAddress cidrAddress = Inet.parseCidrAddress(attributeValue);
+            if (cidrAddress == null) {
+                throw msg.cidrAddressParseException(getAttributeName(index), attributeValue, getLocation());
+            }
+            return cidrAddress;
         }
     }
 }
