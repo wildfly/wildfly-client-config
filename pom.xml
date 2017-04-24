@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>16</version>
+        <version>23</version>
     </parent>
 
     <groupId>org.wildfly.client</groupId>
@@ -35,24 +35,18 @@
     <description>Library for supporting WildFly common client configuration</description>
 
     <properties>
-        <version.checkstyle.plugin>2.9.1</version.checkstyle.plugin>
-        <version.org.jboss.logging.jboss-logging>3.1.4.GA</version.org.jboss.logging.jboss-logging>
-        <version.org.jboss.logging.jboss-logging-processor>1.2.0.Final</version.org.jboss.logging.jboss-logging-processor>
-        <version.org.jboss.logmanager>1.5.2.Final</version.org.jboss.logmanager>
-        <version.org.wildfly.checkstyle-config>1.0.2.Final</version.org.wildfly.checkstyle-config>
+        <version.org.jboss.logging.jboss-logging>3.3.1.Final</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging-processor>2.0.2.Final</version.org.jboss.logging.jboss-logging-processor>
+        <version.org.jboss.logmanager>2.0.6.Final</version.org.jboss.logmanager>
+        <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.2.0.Beta9</version.org.wildfly.common>
-        <version.com.puppycrawl.tools.checkstyle>6.1</version.com.puppycrawl.tools.checkstyle>
-
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+  </properties>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.11</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <systemProperties>
@@ -80,8 +74,9 @@
                 <configuration>
                     <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
-                    <failsOnError>false</failsOnError>
-                    <useFile/>
+                    <failsOnError>true</failsOnError>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <excludes>**/*$logger.java,**/*$bundle.java</excludes>
                     <linkXRef>false</linkXRef>
                 </configuration>
                 <dependencies>
@@ -89,11 +84,6 @@
                         <groupId>org.wildfly.checkstyle</groupId>
                         <artifactId>wildfly-checkstyle-config</artifactId>
                         <version>${version.org.wildfly.checkstyle-config}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>${version.com.puppycrawl.tools.checkstyle}</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -107,9 +97,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -144,7 +131,7 @@
         <dependency>
         <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
