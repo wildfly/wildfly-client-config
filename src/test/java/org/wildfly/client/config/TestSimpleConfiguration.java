@@ -18,7 +18,7 @@
 
 package org.wildfly.client.config;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 import java.net.URL;

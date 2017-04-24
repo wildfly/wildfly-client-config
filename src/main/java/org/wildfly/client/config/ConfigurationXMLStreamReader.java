@@ -211,7 +211,7 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
 
     XMLLocation getLocation();
 
-    int getTextCharacters(final int sourceStart, final char[] target, final int targetStart, final int length) throws ConfigXMLParseException;
+    int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) throws ConfigXMLParseException;
 
     void close() throws ConfigXMLParseException;
 
