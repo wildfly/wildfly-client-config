@@ -312,6 +312,26 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     // ===== attribute helpers =====
 
     /**
+     * Get the value of an attribute.
+     *
+     * @param index the index of the attribute
+     * @return the attribute value
+     */
+    String getAttributeValue(int index);
+
+    /**
+     * Get the value of an attribute with expressions resolved.
+     *
+     * @param index the index of the attribute
+     * @return the attribute value
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default String getAttributeValueResolved(int index) throws ConfigXMLParseException {
+        final Expression expression = getExpressionAttributeValue(index, Expression.Flag.ESCAPES);
+        return expression.evaluateWithPropertiesAndEnvironment(false);
+    }
+
+    /**
      * Get the value of an attribute as an integer.
      *
      * @param index the index of the attribute
@@ -323,6 +343,23 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     default int getIntAttributeValue(int index) throws ConfigXMLParseException {
         try {
             return Integer.parseInt(getAttributeValue(index));
+        } catch (NumberFormatException e) {
+            throw msg.intParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
+     * Get the value of an attribute as an integer with expressions resolved.
+     *
+     * @param index the index of the attribute
+     *
+     * @return the integer value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default int getIntAttributeValueResolved(int index) throws ConfigXMLParseException {
+        try {
+            return Integer.parseInt(getAttributeValueResolved(index));
         } catch (NumberFormatException e) {
             throw msg.intParseException(e, getAttributeName(index), getLocation());
         }
@@ -348,6 +385,25 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as an integer with expressions resolved.
+     *
+     * @param index the index of the attribute
+     * @param minValue the minimum allowed value
+     * @param maxValue the maximum allowed value
+     *
+     * @return the integer value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default int getIntAttributeValueResolved(int index, int minValue, int maxValue) throws ConfigXMLParseException {
+        final int value = getIntAttributeValueResolved(index);
+        if (value < minValue || value > maxValue) {
+            throw numericAttributeValueOutOfRange(index, minValue, maxValue);
+        }
+        return value;
+    }
+
+    /**
      * Get the value of an attribute as an integer list.
      *
      * @param index the index of the attribute
@@ -365,6 +421,23 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as an integer list with expressions resolved.
+     *
+     * @param index the index of the attribute
+     *
+     * @return the integer values
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default int[] getIntListAttributeValueResolved(int index) throws ConfigXMLParseException {
+        try {
+            return new Delimiterator(getAttributeValueResolved(index), ' ').toIntArray();
+        } catch (NumberFormatException e) {
+            throw msg.intParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
      * Get the value of an attribute as a space-delimited string list, as an iterator.
      *
      * @param index the index of the attribute
@@ -376,6 +449,18 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+    /**
+     * Get the value of an attribute as a space-delimited string list with expressions resolved, as an iterator.
+     *
+     * @param index the index of the attribute
+     * @return the values
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default Iterator<String> getListAttributeValueAsIteratorResolved(int index) throws ConfigXMLParseException {
+        return new Delimiterator(getAttributeValueResolved(index), ' ');
+    }
+
+    /**
      * Get the value of an attribute as a space-delimited string list.
      *
      * @param index the index of the attribute
@@ -384,6 +469,17 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
      */
     default List<String> getListAttributeValue(int index) throws ConfigXMLParseException {
         return Arrays.asList(getListAttributeValueAsArray(index));
+    }
+
+    /**
+     * Get the value of an attribute as a space-delimited string list with expressions resolved.
+     *
+     * @param index the index of the attribute
+     * @return the values
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default List<String> getListAttributeValueResolved(int index) throws ConfigXMLParseException {
+        return Arrays.asList(getListAttributeValueAsArrayResolved(index));
     }
 
     /**
@@ -400,6 +496,19 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as a space-delimited string list with expressions resolved, as an array.
+     *
+     * @param index the index of the attribute
+     *
+     * @return the values
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default String[] getListAttributeValueAsArrayResolved(int index) throws ConfigXMLParseException {
+        return new Delimiterator(getAttributeValueResolved(index), ' ').toStringArray();
+    }
+
+    /**
      * Get the value of an attribute as a long.
      *
      * @param index the index of the attribute
@@ -411,6 +520,23 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     default long getLongAttributeValue(int index) throws ConfigXMLParseException {
         try {
             return Long.parseLong(getAttributeValue(index));
+        } catch (NumberFormatException e) {
+            throw msg.intParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
+     * Get the value of an attribute as a long with expressions resolved.
+     *
+     * @param index the index of the attribute
+     *
+     * @return the long value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default long getLongAttributeValueResolved(int index) throws ConfigXMLParseException {
+        try {
+            return Long.parseLong(getAttributeValueResolved(index));
         } catch (NumberFormatException e) {
             throw msg.intParseException(e, getAttributeName(index), getLocation());
         }
@@ -436,6 +562,25 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as a long with expressions resolved.
+     *
+     * @param index the index of the attribute
+     * @param minValue the minimum allowed value
+     * @param maxValue the maximum allowed value
+     *
+     * @return the long value
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default long getLongAttributeValueResolved(int index, long minValue, long maxValue) throws ConfigXMLParseException {
+        final long value = getLongAttributeValueResolved(index);
+        if (value < minValue || value > maxValue) {
+            throw numericAttributeValueOutOfRange(index, minValue, maxValue);
+        }
+        return value;
+    }
+
+    /**
      * Get the value of an attribute as a long integer list.
      *
      * @param index the index of the attribute
@@ -453,6 +598,23 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get the value of an attribute as a long integer list with expressions resolved.
+     *
+     * @param index the index of the attribute
+     *
+     * @return the long values
+     *
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default long[] getLongListAttributeValueResolved(int index) throws ConfigXMLParseException {
+        try {
+            return new Delimiterator(getAttributeValueResolved(index), ' ').toLongArray();
+        } catch (NumberFormatException e) {
+            throw msg.intParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
      * Get an attribute value as a {@code boolean}.  Only the string {@code "true"} (case-insensitive) is recognized as
      * a {@code true} value; all other strings are considered {@code false}.
      *
@@ -461,6 +623,18 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
      */
     default boolean getBooleanAttributeValue(int index) {
         return Boolean.parseBoolean(getAttributeValue(index));
+    }
+
+    /**
+     * Get an attribute value as a {@code boolean} with expressions resolved.  Only the string {@code "true"} (case-insensitive) is recognized as
+     * a {@code true} value; all other strings are considered {@code false}.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if an error occurs
+     */
+    default boolean getBooleanAttributeValueResolved(int index) throws ConfigXMLParseException {
+        return Boolean.parseBoolean(getAttributeValueResolved(index));
     }
 
     /**
@@ -473,6 +647,21 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     default URI getURIAttributeValue(int index) throws ConfigXMLParseException {
         try {
             return new URI(getAttributeValue(index));
+        } catch (URISyntaxException e) {
+            throw msg.uriParseException(e, getAttributeName(index), getLocation());
+        }
+    }
+
+    /**
+     * Get an attribute value as a {@link URI} with expressions resolved.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid URI
+     */
+    default URI getURIAttributeValueResolved(int index) throws ConfigXMLParseException {
+        try {
+            return new URI(getAttributeValueResolved(index));
         } catch (URISyntaxException e) {
             throw msg.uriParseException(e, getAttributeName(index), getLocation());
         }
@@ -518,6 +707,26 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
     }
 
     /**
+     * Get an attribute value as a {@link InetAddress} with expressions resolved.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid IP address
+     */
+    default InetAddress getInetAddressAttributeValueResolved(int index) throws ConfigXMLParseException {
+        final String attributeValue = getAttributeValueResolved(index);
+        if (attributeValue == null) {
+            return null;
+        } else {
+            final InetAddress inetAddress = Inet.parseInetAddress(attributeValue);
+            if (inetAddress == null) {
+                throw msg.inetAddressParseException(getAttributeName(index), attributeValue, getLocation());
+            }
+            return inetAddress;
+        }
+    }
+
+    /**
      * Get an attribute value as a {@link CidrAddress}.
      *
      * @param index the attribute index
@@ -526,6 +735,26 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
      */
     default CidrAddress getCidrAddressAttributeValue(int index) throws ConfigXMLParseException {
         final String attributeValue = getAttributeValue(index);
+        if (attributeValue == null) {
+            return null;
+        } else {
+            final CidrAddress cidrAddress = Inet.parseCidrAddress(attributeValue);
+            if (cidrAddress == null) {
+                throw msg.cidrAddressParseException(getAttributeName(index), attributeValue, getLocation());
+            }
+            return cidrAddress;
+        }
+    }
+
+    /**
+     * Get an attribute value as a {@link CidrAddress} with expressions resolved.
+     *
+     * @param index the attribute index
+     * @return the attribute value
+     * @throws ConfigXMLParseException if the value is not a valid IP address
+     */
+    default CidrAddress getCidrAddressAttributeValueResolved(int index) throws ConfigXMLParseException {
+        final String attributeValue = getAttributeValueResolved(index);
         if (attributeValue == null) {
             return null;
         } else {
