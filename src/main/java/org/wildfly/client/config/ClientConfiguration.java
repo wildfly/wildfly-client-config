@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Set;
@@ -215,7 +216,7 @@ public class ClientConfiguration {
                 uri = new URI(wildFlyConfig);
                 if (! uri.isAbsolute()) {
                     String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
-                    uri = new URI("file", "", userDir.endsWith("/") ? userDir : userDir + "/", null).resolve(uri);
+                    uri = Paths.get(userDir, uri.getPath()).toUri();
                 }
             } catch (URISyntaxException e) {
                 // no config file there
