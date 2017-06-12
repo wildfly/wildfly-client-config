@@ -48,6 +48,8 @@ import org.wildfly.common.function.ExceptionSupplier;
  */
 public class ClientConfiguration {
 
+    private static final String WILDFLY_CLIENT_1_0 = "urn:wildfly:client:1.0";
+
     private final XMLInputFactory xmlInputFactory;
     private final URI configurationUri;
     private final ExceptionSupplier<InputStream, IOException> streamSupplier;
@@ -141,7 +143,10 @@ public class ClientConfiguration {
                     case START_ELEMENT: {
                         final String namespaceURI = reader.getNamespaceURI();
                         final String localName = reader.getLocalName();
-                        if (namespaceURI != null && namespaceURI.length() > 0 || ! "configuration".equals(localName)) {
+                        if (namespaceURI != null && ! namespaceURI.equals(WILDFLY_CLIENT_1_0)) {
+                            throw msg.unexpectedElement(localName, namespaceURI, reader.getLocation());
+                        }
+                        if (! "configuration".equals(localName)) {
                             if (namespaceURI == null) {
                                 throw msg.unexpectedElement(localName, reader.getLocation());
                             } else {
