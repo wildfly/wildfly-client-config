@@ -216,18 +216,7 @@ public class ClientConfiguration {
         // specified URL overrides all
         final String wildFlyConfig = System.getProperty("wildfly.config.url");
         if (wildFlyConfig != null) {
-            URI uri;
-            try {
-                uri = new URI(wildFlyConfig);
-                if (! uri.isAbsolute()) {
-                    String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
-                    uri = Paths.get(userDir, uri.getPath()).toUri();
-                }
-            } catch (URISyntaxException e) {
-                // no config file there
-                return null;
-            }
-            return getInstance(uri);
+            return getInstance(propertyUrlToUri(wildFlyConfig));
         }
 
         ClassLoader classLoader;
@@ -254,6 +243,23 @@ public class ClientConfiguration {
         }
     }
 
+    static URI propertyUrlToUri(String wildFlyConfig) {
+        try {
+            URI uri = new URI(wildFlyConfig);
+            if (! uri.isAbsolute()) { // URI does not include schema
+                if (uri.getPath().charAt(0) != File.separatorChar && uri.getPath().charAt(0) != '/') { // relative path
+                    String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
+                    return Paths.get(userDir, uri.getPath()).toUri();
+                } else { // absolute path
+                    return Paths.get(uri.getPath()).toUri();
+                }
+            }
+            return uri;
+        } catch (URISyntaxException e) {
+            // no config file there
+            return null;
+        }
+    }
 
     private static ClassLoader getContextClassLoader() {
         return Thread.currentThread().getContextClassLoader();

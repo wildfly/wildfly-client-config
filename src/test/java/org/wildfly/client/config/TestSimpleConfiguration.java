@@ -20,9 +20,12 @@ package org.wildfly.client.config;
 
 import static junit.framework.Assert.*;
 import static javax.xml.stream.XMLStreamConstants.*;
+import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -301,5 +304,16 @@ public final class TestSimpleConfiguration {
                 }
             }
         }
+    }
+
+    @Test
+    public void testPropertyUrl() {
+        assertEquals("file:///absolute.xml", ClientConfiguration.propertyUrlToUri("file:///absolute.xml").toString());
+        assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("relative").toString()));
+        assertTrue(
+                Pattern.matches("file:///absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString()) ||
+                Pattern.matches("file:///[A-Za-z]:/absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString())
+        );
+        assertEquals("file:///C:/absolute.xml", ClientConfiguration.propertyUrlToUri("file:///C:/absolute.xml").toString());
     }
 }
