@@ -51,6 +51,52 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
 
     int next() throws ConfigXMLParseException;
 
+    /**
+     * Determine whether the current element has a non-empty namespace URI.
+     *
+     * @return {@code true} if the element has a non-empty namespace URI, {@code false} otherwise
+     */
+    default boolean hasNamespace() {
+        final String namespaceURI = getNamespaceURI();
+        return namespaceURI != null && ! namespaceURI.isEmpty();
+    }
+
+    /**
+     * Determine whether the current element has a namespace URI equal to the given value.  If the given
+     * value is {@code null} or empty, this method returns {@code true} only if the current element has no namespace.
+     *
+     * @param uri the namespace URI to test
+     * @return {@code true} if the element has a namespace URI equal to the argument, or the argument is {@code null} or empty
+     *  and the element has no namespace, or {@code false} otherwise
+     */
+    default boolean namespaceURIEquals(String uri) {
+        return uri == null || uri.isEmpty() ? ! hasNamespace() : uri.equals(getNamespaceURI());
+    }
+
+    /**
+     * Determine whether the current element has an attribute at the given index with a non-empty namespace URI.
+     *
+     * @param idx the attribute index
+     * @return {@code true} if the attribute has a non-empty namespace URI, {@code false} otherwise
+     */
+    default boolean hasAttributeNamespace(int idx) {
+        final String attributeNamespace = getAttributeNamespace(idx);
+        return attributeNamespace != null && ! attributeNamespace.isEmpty();
+    }
+
+    /**
+     * Determine whether the current element has an attribute at the given index with a namespace URI equal to the given value.  If the given
+     * value is {@code null} or empty, this method returns {@code true} only if the attribute has no namespace.
+     *
+     * @param idx the attribute index
+     * @param uri the namespace URI to test
+     * @return {@code true} if the attribute has a namespace URI equal to the argument, or the argument is {@code null} or empty
+     *  and the element has no namespace, or {@code false} otherwise
+     */
+    default boolean attributeNamespaceEquals(int idx, String uri) {
+        return uri == null || uri.isEmpty() ? ! hasAttributeNamespace(idx) : uri.equals(getAttributeNamespace(idx));
+    }
+
     default int nextTag() throws ConfigXMLParseException {
         int eventType;
         for (;;) {

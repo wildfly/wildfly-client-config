@@ -143,8 +143,11 @@ public class ClientConfiguration {
                     case START_ELEMENT: {
                         final String namespaceURI = reader.getNamespaceURI();
                         final String localName = reader.getLocalName();
-                        if (namespaceURI != null && ! namespaceURI.equals(WILDFLY_CLIENT_1_0)) {
+                        if (reader.hasNamespace() && ! reader.namespaceURIEquals(WILDFLY_CLIENT_1_0)) {
                             throw msg.unexpectedElement(localName, namespaceURI, reader.getLocation());
+                        }
+                        if (reader.getAttributeCount() > 0) {
+                            throw msg.unexpectedAttribute(reader.getAttributeName(0), reader.getLocation());
                         }
                         if (! "configuration".equals(localName)) {
                             if (namespaceURI == null) {
