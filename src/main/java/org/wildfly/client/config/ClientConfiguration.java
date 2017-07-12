@@ -233,6 +233,18 @@ public class ClientConfiguration {
             // no priv block needed since it's our class loader
             classLoader = ClientConfiguration.class.getClassLoader();
         }
+        return getInstance(classLoader);
+    }
+
+    /**
+     * Get a client configuration instance loaded from a file called {@code wildfly-config.xml}, either from the
+     * root of the specified class loader or within the {@code META-INF} folder.
+     * If no configurations are found or are loadable, {@code null} is returned.
+     *
+     * @param classLoader the class loader from which to load the configuration resource
+     * @return the client configuration instance, or {@code null} if no configuration is found
+     */
+    public static ClientConfiguration getInstance(ClassLoader classLoader) {
         URL resource = classLoader.getResource("wildfly-config.xml");
         if (resource == null) {
             resource = classLoader.getResource("META-INF/wildfly-config.xml");
