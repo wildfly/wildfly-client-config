@@ -27,6 +27,14 @@
         <version>22</version>
     </parent>
 
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <groupId>org.wildfly.client</groupId>
     <artifactId>wildfly-client-config</artifactId>
     <version>1.0.0.CR3-SNAPSHOT</version>
