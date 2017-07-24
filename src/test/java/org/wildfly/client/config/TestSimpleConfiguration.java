@@ -18,11 +18,9 @@
 
 package org.wildfly.client.config;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 import static javax.xml.stream.XMLStreamConstants.*;
-import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.regex.Pattern;
@@ -33,6 +31,9 @@ import org.junit.Test;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class TestSimpleConfiguration {
+
+    public TestSimpleConfiguration() {
+    }
 
     @Test
     public void testEmptyFile() throws Exception {
