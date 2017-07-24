@@ -84,7 +84,7 @@
                 <configuration>
                     <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
-                    <failsOnError>false</failsOnError>
+                    <failsOnError>true</failsOnError>
                     <useFile/>
                     <linkXRef>false</linkXRef>
                 </configuration>
