@@ -18,9 +18,18 @@
 
 package org.wildfly.client.config;
 
-import static org.junit.Assert.*;
-import static javax.xml.stream.XMLStreamConstants.*;
+import static javax.xml.stream.XMLStreamConstants.CHARACTERS;
+import static javax.xml.stream.XMLStreamConstants.COMMENT;
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.SPACE;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.regex.Pattern;
@@ -314,6 +323,11 @@ public final class TestSimpleConfiguration {
         assertTrue(
                 Pattern.matches("file:///absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString()) ||
                 Pattern.matches("file:///[A-Za-z]:/absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString())
+        );
+        final URI winURI = ClientConfiguration.propertyUrlToUri("C:\\absolute.xml");
+        assertTrue(
+                winURI == null ||
+                Pattern.matches("file:///C:/absolute.xml", winURI.toString())
         );
         assertEquals("file:///C:/absolute.xml", ClientConfiguration.propertyUrlToUri("file:///C:/absolute.xml").toString());
     }

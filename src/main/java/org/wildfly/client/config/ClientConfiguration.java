@@ -19,11 +19,12 @@
 package org.wildfly.client.config;
 
 import static java.lang.Boolean.FALSE;
-import static javax.xml.stream.XMLStreamConstants.*;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.wildfly.client.config.ConfigurationXMLStreamReader.eventToString;
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -67,6 +68,10 @@ public class ClientConfiguration {
     }
 
     private InputStream streamOpener() throws IOException {
+        if (configurationUri == null) {
+            throw new FileNotFoundException("Configuration file is not loaded");
+        }
+
         final URL url = configurationUri.toURL();
         final URLConnection connection = url.openConnection();
         connection.setRequestProperty("Accept", "application/xml,text/xml,application/xhtml+xml");
@@ -259,20 +264,25 @@ public class ClientConfiguration {
     }
 
     static URI propertyUrlToUri(String wildFlyConfig) {
-        try {
-            URI uri = new URI(wildFlyConfig);
-            if (! uri.isAbsolute()) { // URI does not include schema
-                if (uri.getPath().charAt(0) != File.separatorChar && uri.getPath().charAt(0) != '/') { // relative path
-                    String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
-                    return Paths.get(userDir, uri.getPath()).toUri();
-                } else { // absolute path
-                    return Paths.get(uri.getPath()).toUri();
+        if (File.separator.equals("\\") && wildFlyConfig.contains("\\")) { // we are on the windows and we have windows absolute path
+            File f = new File(wildFlyConfig);
+            return f.toPath().toUri();
+        } else {
+            try {
+                URI uri = new URI(wildFlyConfig);
+                if (!uri.isAbsolute()) { // URI does not include schema
+                    if (uri.getPath().charAt(0) != File.separatorChar && uri.getPath().charAt(0) != '/') { // relative path
+                        String userDir = System.getProperty("user.dir").replace(File.separatorChar, '/');
+                        return Paths.get(userDir, uri.getPath()).toUri();
+                    } else { // absolute path
+                        return Paths.get(uri.getPath()).toUri();
+                    }
                 }
+                return uri;
+            } catch (URISyntaxException e) {
+                // no config file there
+                return null;
             }
-            return uri;
-        } catch (URISyntaxException e) {
-            // no config file there
-            return null;
         }
     }
 
