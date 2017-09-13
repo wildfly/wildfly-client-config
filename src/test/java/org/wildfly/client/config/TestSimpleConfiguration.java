@@ -320,6 +320,7 @@ public final class TestSimpleConfiguration {
     public void testPropertyUrl() {
         assertEquals("file:///absolute.xml", ClientConfiguration.propertyUrlToUri("file:///absolute.xml").toString());
         assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("relative").toString()));
+        assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("..\\relative").toString()));
         assertTrue(
                 Pattern.matches("file:///absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString()) ||
                 Pattern.matches("file:///[A-Za-z]:/absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString())

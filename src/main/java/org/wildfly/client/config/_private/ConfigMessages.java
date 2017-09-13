@@ -18,6 +18,7 @@
 
 package org.wildfly.client.config._private;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -115,4 +116,7 @@ public interface ConfigMessages {
 
     @Message(id = 24, value = "Failed to parse CIDR address value of attribute \"%s\": \"%s\" is not a valid CIDR address")
     ConfigXMLParseException cidrAddressParseException(QName attributeName, String address, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 25, value = "Configuration file is not loaded")
+    FileNotFoundException configFileNotLoaded();
 }

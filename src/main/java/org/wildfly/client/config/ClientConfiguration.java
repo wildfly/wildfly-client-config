@@ -69,7 +69,7 @@ public class ClientConfiguration {
 
     private InputStream streamOpener() throws IOException {
         if (configurationUri == null) {
-            throw new FileNotFoundException("Configuration file is not loaded");
+            throw msg.configFileNotLoaded();
         }
 
         final URL url = configurationUri.toURL();
@@ -264,7 +264,7 @@ public class ClientConfiguration {
     }
 
     static URI propertyUrlToUri(String wildFlyConfig) {
-        if (File.separator.equals("\\") && wildFlyConfig.contains("\\")) { // we are on the windows and we have windows absolute path
+        if (File.separator.equals("\\") && wildFlyConfig.contains("\\")) { // we are on the windows and path is for windows
             File f = new File(wildFlyConfig);
             return f.toPath().toUri();
         } else {
