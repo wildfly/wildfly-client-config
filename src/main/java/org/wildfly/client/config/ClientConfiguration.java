@@ -24,7 +24,6 @@ import static org.wildfly.client.config.ConfigurationXMLStreamReader.eventToStri
 import static org.wildfly.client.config._private.ConfigMessages.msg;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -40,6 +39,7 @@ import java.util.Set;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 
+import org.wildfly.common.Assert;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -68,10 +68,6 @@ public class ClientConfiguration {
     }
 
     private InputStream streamOpener() throws IOException {
-        if (configurationUri == null) {
-            throw msg.configFileNotLoaded();
-        }
-
         final URL url = configurationUri.toURL();
         final URLConnection connection = url.openConnection();
         connection.setRequestProperty("Accept", "application/xml,text/xml,application/xhtml+xml");
@@ -188,6 +184,8 @@ public class ClientConfiguration {
      * @return the client configuration instance
      */
     public static ClientConfiguration getInstance(URI configurationUri) {
+        Assert.checkNotNullParam("configurationUri", configurationUri);
+
         return new ClientConfiguration(createXmlInputFactory(), configurationUri);
     }
 
@@ -198,6 +196,8 @@ public class ClientConfiguration {
      * @return the client configuration instance
      */
     public static ClientConfiguration getInstance(URI configurationUri, ExceptionSupplier<InputStream, IOException> streamSupplier) {
+        Assert.checkNotNullParam("configurationUri", configurationUri);
+
         return new ClientConfiguration(createXmlInputFactory(), configurationUri, streamSupplier);
     }
 
@@ -256,7 +256,9 @@ public class ClientConfiguration {
             if (resource == null) {
                 return null;
             }
-        } try {
+        }
+
+        try {
             return new ClientConfiguration(XMLInputFactory.newFactory(), resource.toURI(), resource::openStream);
         } catch (URISyntaxException e) {
             return null;
