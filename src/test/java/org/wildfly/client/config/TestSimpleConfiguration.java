@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.net.URI;
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.regex.Pattern;
@@ -320,16 +320,17 @@ public final class TestSimpleConfiguration {
     public void testPropertyUrl() {
         assertEquals("file:///absolute.xml", ClientConfiguration.propertyUrlToUri("file:///absolute.xml").toString());
         assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("relative").toString()));
-        assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("..\\relative").toString()));
         assertTrue(
                 Pattern.matches("file:///absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString()) ||
-                Pattern.matches("file:///[A-Za-z]:/absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString())
+                        Pattern.matches("file:///[A-Za-z]:/absolute", ClientConfiguration.propertyUrlToUri("/absolute").toString())
         );
-        final URI winURI = ClientConfiguration.propertyUrlToUri("C:\\absolute.xml");
-        assertTrue(
-                winURI == null ||
-                Pattern.matches("file:///C:/absolute.xml", winURI.toString())
-        );
-        assertEquals("file:///C:/absolute.xml", ClientConfiguration.propertyUrlToUri("file:///C:/absolute.xml").toString());
+
+        if (File.separator.equals("\\")) {
+            // we are on the windows and we want to check windows specific behavior
+            assertTrue(Pattern.matches("file:///.*/relative", ClientConfiguration.propertyUrlToUri("..\\relative").toString()));
+            assertTrue(Pattern.matches("file:///C:/absolute.xml",
+                    ClientConfiguration.propertyUrlToUri("C:\\absolute.xml").toString()));
+            assertEquals("file:///C:/absolute.xml", ClientConfiguration.propertyUrlToUri("file:///C:/absolute.xml").toString());
+        }
     }
 }
