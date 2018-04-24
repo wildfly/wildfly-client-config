@@ -89,10 +89,10 @@ public interface ConfigMessages {
     @Message(id = 15, value = "Unexpected attribute \"%s\" encountered")
     ConfigXMLParseException unexpectedAttribute(QName name, @Param(Location.class) XMLLocation location);
 
-    @Message(id = 16, value = "Missing required element \"%s\" from namespace \"%s\"")
+    @Message(id = 16, value = "Missing required element \"%2$s\" from namespace \"%s\"")
     ConfigXMLParseException missingRequiredElement(String namespaceUri, String localName, @Param(Location.class) XMLLocation location);
 
-    @Message(id = 17, value = "Missing required attribute \"%s\" from namespace \"%s\"")
+    @Message(id = 17, value = "Missing required attribute \"%2$s\" from namespace \"%s\"")
     ConfigXMLParseException missingRequiredAttribute(String namespaceUri, String localName, @Param(Location.class) XMLLocation location);
 
     @Message(id = 18, value = "Failed to parse integer value of attribute \"%s\"")
