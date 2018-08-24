@@ -37,7 +37,7 @@
 
     <groupId>org.wildfly.client</groupId>
     <artifactId>wildfly-client-config</artifactId>
-    <version>1.0.1.Final-SNAPSHOT</version>
+    <version>1.0.1.Final</version>
 
     <name>WildFly Client Configuration</name>
     <description>Library for supporting WildFly common client configuration</description>
