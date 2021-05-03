@@ -223,7 +223,7 @@ public class ClientConfiguration {
     public static ClientConfiguration getInstance() {
         // specified URL overrides all
         final String wildFlyConfig = System.getProperty("wildfly.config.url");
-        if (wildFlyConfig != null) {
+        if (wildFlyConfig != null && !isBlank(wildFlyConfig)) {
             return getInstance(propertyUrlToUri(wildFlyConfig));
         }
 
@@ -290,5 +290,8 @@ public class ClientConfiguration {
 
     private static ClassLoader getContextClassLoader() {
         return Thread.currentThread().getContextClassLoader();
+    }
+    private static boolean isBlank(String string){
+        return string.trim().isEmpty();
     }
 }
