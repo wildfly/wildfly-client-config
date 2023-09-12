@@ -48,7 +48,7 @@
         <version.org.jboss.logging.jboss-logging-processor>2.1.0.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager>2.0.7.Final</version.org.jboss.logmanager>
         <version.org.wildfly.checkstyle-config>1.0.5.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.common>1.2.0.Final</version.org.wildfly.common>
+        <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
     </properties>
 
     <build>
