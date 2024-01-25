@@ -26,6 +26,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -725,10 +727,58 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
         final String attributeValue = getAttributeValue(index);
         if (attributeValue == null) {
             return null;
+        } else if (attributeValue.startsWith("env.")) {
+            String envVar = System.getenv().get(attributeValue.substring(4));
+
+            if (envVar.contains("ENC:")) {
+                return resolveEncryptedExpression(envVar, flags);
+            } else {
+                return Expression.compile(envVar, flags);
+            }
+        } else if (attributeValue.contains("env") || attributeValue.contains("ENV")) {
+            String envVar = replaceNonAlphanumericByUnderscoresAndMakeUpperCase(attributeValue);
+
+            if (envVar.contains("ENC:")) {
+                return resolveEncryptedExpression(envVar, flags);
+            } else {
+                return Expression.compile(envVar, flags);
+            }
+        } else if (attributeValue.startsWith("prop.")) {
+            String propertyValue = System.getProperty(attributeValue.substring(5));
+
+            if (propertyValue.contains("ENC:")) {
+                return resolveEncryptedExpression(propertyValue, flags);
+            } else {
+                return Expression.compile(propertyValue, flags);
+            }
+        } else if (attributeValue.contains("prop") || attributeValue.contains("PROP")) {
+            String propertyValue = System.getProperty(replaceNonAlphanumericByUnderscoresAndMakeUpperCase(attributeValue));
+
+            if (propertyValue.contains("ENC:")) {
+                return resolveEncryptedExpression(propertyValue, flags);
+            } else {
+                return Expression.compile(propertyValue, flags);
+            }
+        } else if (attributeValue.contains("ENC:")) {
+            return resolveEncryptedExpression(attributeValue, flags);
         } else try {
             return Expression.compile(attributeValue, flags);
         } catch (IllegalArgumentException ex) {
             throw msg.expressionParseException(ex, getAttributeName(index), getLocation());
+        }
+    }
+
+    default Expression resolveEncryptedExpression(String attributeValue,  Expression.Flag... flags) throws ConfigXMLParseException {
+        try {
+            Iterator<ResolverProvider> resolverProviderIterator = ServiceLoader.load(ResolverProvider.class, ConfigurationXMLStreamReader.class.getClassLoader()).iterator();
+            if (resolverProviderIterator.hasNext()) {
+                final ResolverProvider resolverProvider = resolverProviderIterator.next();
+                return Expression.compile(resolverProvider.resolveExpression(attributeValue), flags);
+            } else {
+                throw msg.failedToLoadResolver();
+            }
+        } catch (ServiceConfigurationError e) {
+            throw msg.failedToLoadUsingServiceLoader(ResolverProvider.class.getName());
         }
     }
 
@@ -810,5 +860,21 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
             }
             return cidrAddress;
         }
+    }
+
+    default String replaceNonAlphanumericByUnderscoresAndMakeUpperCase(final String name) {
+        StringBuilder sb = new StringBuilder();
+        int c;
+        for (int i = 0; i < name.length(); i += Character.charCount(c)) {
+            c = Character.toUpperCase(name.codePointAt(i));
+            if ('A' <= c && c <= 'Z' || '0' <= c && c <= '9') {
+                sb.appendCodePoint(c);
+            } else if (c == '{' || c == '}' || c == '$') {
+                //ignore these characters
+            }else {
+                sb.append('_');
+            }
+        }
+        return sb.toString();
     }
 }

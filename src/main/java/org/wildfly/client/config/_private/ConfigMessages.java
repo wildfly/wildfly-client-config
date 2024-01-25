@@ -21,6 +21,7 @@ package org.wildfly.client.config._private;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.ServiceConfigurationError;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -115,4 +116,10 @@ public interface ConfigMessages {
 
     @Message(id = 24, value = "Failed to parse CIDR address value of attribute \"%s\": \"%s\" is not a valid CIDR address")
     ConfigXMLParseException cidrAddressParseException(QName attributeName, String address, @Param(Location.class) XMLLocation location);
+
+    @Message(id = 25, value = "Failed to load a resolver for the encrypted expression.")
+    ConfigXMLParseException failedToLoadResolver();
+
+    @Message(id = 26, value = "Failed to load the \"%s\" class using a service loader.")
+    ServiceConfigurationError failedToLoadUsingServiceLoader(String className);
 }
