@@ -729,36 +729,16 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
             return null;
         } else if (attributeValue.startsWith("env.")) {
             String envVar = System.getenv().get(attributeValue.substring(4));
-
-            if (envVar.contains("ENC:")) {
-                return resolveEncryptedExpression(envVar, flags);
-            } else {
-                return Expression.compile(envVar, flags);
-            }
+            return getExpressionFromVariable(envVar, flags);
         } else if (attributeValue.contains("env") || attributeValue.contains("ENV")) {
             String envVar = replaceNonAlphanumericByUnderscoresAndMakeUpperCase(attributeValue);
-
-            if (envVar.contains("ENC:")) {
-                return resolveEncryptedExpression(envVar, flags);
-            } else {
-                return Expression.compile(envVar, flags);
-            }
+            return getExpressionFromVariable(envVar, flags);
         } else if (attributeValue.startsWith("prop.")) {
             String propertyValue = System.getProperty(attributeValue.substring(5));
-
-            if (propertyValue.contains("ENC:")) {
-                return resolveEncryptedExpression(propertyValue, flags);
-            } else {
-                return Expression.compile(propertyValue, flags);
-            }
+            return getExpressionFromVariable(propertyValue, flags);
         } else if (attributeValue.contains("prop") || attributeValue.contains("PROP")) {
             String propertyValue = System.getProperty(replaceNonAlphanumericByUnderscoresAndMakeUpperCase(attributeValue));
-
-            if (propertyValue.contains("ENC:")) {
-                return resolveEncryptedExpression(propertyValue, flags);
-            } else {
-                return Expression.compile(propertyValue, flags);
-            }
+            return getExpressionFromVariable(propertyValue, flags);
         } else if (attributeValue.contains("ENC:")) {
             return resolveEncryptedExpression(attributeValue, flags);
         } else try {
@@ -876,5 +856,13 @@ public interface ConfigurationXMLStreamReader extends XMLStreamReader, AutoClose
             }
         }
         return sb.toString();
+    }
+
+    default Expression getExpressionFromVariable(final String variable, Expression.Flag... flags) throws ConfigXMLParseException {
+        if (variable.contains("ENC:")) {
+            return resolveEncryptedExpression(variable, flags);
+        } else {
+            return Expression.compile(variable, flags);
+        }
     }
 }
