@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-test-matrix:
-    name: ${{ matrix.jdk-distribution }}-${{ matrix.jdk-version }}-${{ matrix.os }}
+    name: ${{ matrix.jdk-distribution }}-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
@@ -17,7 +17,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         jdk-distribution: [temurin, adopt-openj9]
-        jdk-version: [17, 21, 25]
     steps:
     - name: Configure runner - Linux
       if: contains(matrix.os, 'ubuntu')
@@ -31,15 +30,19 @@ jobs:
         echo '::1         localhost localhost.localdomain localhost6 localhost6.localdomain6' >> %SystemRoot%\System32\drivers\etc\hosts
       shell: cmd
     - uses: actions/checkout@v6
-    - name: Set up JDK ${{ matrix.jdk-distribution }} ${{ matrix.jdk-version }}
+    - name: Set up JDKs
       uses: actions/setup-java@v5
       with:
         distribution: ${{ matrix.jdk-distribution }}
-        java-version: ${{ matrix.jdk-version }}
+        java-version: |
+          11
+          17
+          21
+          25
     - name: Run Tests
-      run: mvn -ntp -U -B -fae clean install
+      run: mvn -ntp -U -B -fae clean install '-Djava11.home=${{env.JAVA_HOME_11_X64}}' '-Djava17.home=${{env.JAVA_HOME_17_X64}}' '-Djava21.home=${{env.JAVA_HOME_21_X64}}' '-Djava25.home=${{env.JAVA_HOME_25_X64}}'
     - uses: actions/upload-artifact@v6
       if: failure()
       with:
-        name: surefire-${{ matrix.jdk-distribution }}-${{ matrix.jdk-version }}-${{ matrix.os }}
+        name: surefire-${{ matrix.jdk-distribution }}-${{ matrix.os }}
         path: '**/surefire-reports/*.txt'
