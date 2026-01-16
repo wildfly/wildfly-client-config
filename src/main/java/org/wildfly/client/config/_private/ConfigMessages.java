@@ -18,6 +18,8 @@
 
 package org.wildfly.client.config._private;
 
+import static java.lang.invoke.MethodHandles.*;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -40,7 +42,7 @@ import org.wildfly.client.config.XMLLocation;
 @MessageBundle(projectCode = "CONF", length = 4)
 public interface ConfigMessages {
 
-    ConfigMessages msg = Messages.getBundle(ConfigMessages.class);
+    ConfigMessages msg = Messages.getBundle(lookup(), ConfigMessages.class);
 
     @Message(id = 1, value = "An unspecified XML parse error occurred")
     String parseError();
