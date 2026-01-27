@@ -43,6 +43,7 @@
     <description>Library for supporting WildFly common client configuration</description>
 
     <properties>
+        <maven.compiler.release>17</maven.compiler.release>
         <version.checkstyle.plugin>3.6.0</version.checkstyle.plugin>
         <version.org.jacoco>0.8.14</version.org.jacoco>
         <version.org.jboss.logging.jboss-logging>3.6.1.Final</version.org.jboss.logging.jboss-logging>
